@@ -25,7 +25,8 @@ class Department(Base):
                       UniqueConstraint("building", "office", name="departments_uk_03"),
                       UniqueConstraint("description", name="departments_uk_04"))
 
-    def __init__(self, abbreviation: str, chair_name: str, building: str, office: int, description: str):
+    def __init__(self, department_name: str, abbreviation: str, chair_name: str, building: str, office: int, description: str):
+        self.department_name = department_name
         self.abbreviation = abbreviation
         self.chair_name = chair_name
         self.building = building
@@ -33,4 +34,4 @@ class Department(Base):
         self.description = description
 
     def __str__(self):
-        return f"Department: {self.department_name} Abbreviation: {self.abbreviation}\nChair Name: {self.chair_name}\nBuilding: {self.building}, Office:{self.office}\n{self.Description}"
+        return f"Department: {self.department_name} Abbreviation: {self.abbreviation}\nChair Name: {self.chair_name}\nBuilding: {self.building}, Office: {self.office}\n{self.description}"

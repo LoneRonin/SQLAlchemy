@@ -1,5 +1,5 @@
 import logging
-from menu_definitions import menu_main, student_select, debug_select
+from menu_definitions import menu_main, department_select, debug_select
 from db_connection import engine, Session
 from orm_base import metadata
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
@@ -16,12 +16,12 @@ def add_department(session: Session):
     :param session: The connection to the database.
     :return:        None
     """
-    unique_department: bool = False
-    unique_abbr: bool = False
+    #unique_department: bool = False
+    unique_abbreviation: bool = False
     unique_chair_name: bool = False
     unique_office: bool = False
     unique_description: bool = False
-    department: str = ''
+    department_name: str = ''
     abbreviation: str = ''
     chair_name: str = ''
     building: str = ''
@@ -30,13 +30,14 @@ def add_department(session: Session):
     # Note that there is no physical way for us to duplicate the student_id since we are
     # using the Identity "type" for studentId and allowing PostgreSQL to handle that.
     # See more at: https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-identity-column/
-    while not unique_department or not unique_abbreviation or not unique_chair_name or not unique_office or not unique_description:
-        department = input("Department name--> ")
+    while not unique_abbreviation or not unique_chair_name or not unique_office or not unique_description:
+        department_name = input("Department name--> ")
         abbreviation = input("Abbreviation--> ")
         chair_name = input("Chair name--> ")
         building = input("Building name--> ")
         office = int(input("Office number--> "))
         description = input("Description--> ")
+
         abbreviation_count: int = session.query(Department).filter(Department.abbreviation == abbreviation).count()
 
         unique_abbreviation = abbreviation_count == 0
@@ -53,95 +54,15 @@ def add_department(session: Session):
                 unique_office = office_count == 0
                 if not unique_office:
                     print("That office currently already is occupied.  Try again.")
-                if unique_department:
+                if unique_office:
                     description_count: int = session.query(Department).filter(Department.description == description).count()
                     unique_description = description_count == 0
                     if not unique_description:
-                        print("We already have that desscription.  Try again.")
+                        print("We already have that description.  Try again.")
 
-    newDepartment = Department(abbreviation, chair_name, building, office, description)
+
+    newDepartment = Department(department_name, abbreviation, chair_name, building, office, description)
     session.add(newDepartment)
-
-
-def select_department_name(sess: Session) -> Department:
-    """
-    Prompt the user for a specific department by the name.  Generally
-    this is not a terribly useful approach, but I have it here for
-    an example.
-    :param sess:    The connection to the database.
-    :return:        The selected student.
-    """
-    found: bool = False
-    ID: int = -1
-    while not found:
-        ID = int(input("Enter the student ID--> "))
-        id_count: int = sess.query(Department).filter(Department.studentId == ID).count()
-        found = id_count == 1
-        if not found:
-            print("No student with that ID.  Try again.")
-    return_student: Department = sess.query(Department).filter(Department.studentId == ID).first()
-    return return_student
-
-
-def select_department_first_and_last_name(sess: Session) -> Department:
-    """
-    Select a student by the combination of the first and last name.
-    :param sess:    The connection to the database.
-    :return:        The selected student.
-    """
-    found: bool = False
-    lastName: str = ''
-    firstName: str = ''
-    while not found:
-        lastName = input("Student last name to delete--> ")
-        firstName = input("Student first name to delete--> ")
-        name_count: int = sess.query(Department).filter(Department.lastName == lastName,
-                                                     Department.firstName == firstName).count()
-        found = name_count == 1
-        if not found:
-            print("No student by that name.  Try again.")
-    oldStudent = sess.query(Department).filter(Department.lastName == lastName,
-                                            Department.firstName == firstName).first()
-    return oldStudent
-
-
-def select_department_email(sess: Session) -> Department:
-    """
-    Select a student by the e-mail address.
-    :param sess:    The connection to the database.
-    :return:        The selected student.
-    """
-    found: bool = False
-    email: str = ''
-    while not found:
-        email = input("Enter the student ID--> ")
-        id_count: int = sess.query(Department).filter(Department.eMail == email).count()
-        found = id_count == 1
-        if not found:
-            print("No student with that email address.  Try again.")
-    return_student: Department = sess.query(Department).filter(Department.eMail == email).first()
-    return return_student
-
-
-def find_department(sess: Session) -> Department:
-    """
-    Prompt the user for attribute values to select a single student.
-    :param sess:    The connection to the database.
-    :return:        The instance of Student that the user selected.
-                    Note: there is no provision for the user to simply "give up".
-    """
-    find_student_command = student_select.menu_prompt()
-    match find_student_command:
-        case "ID":
-            old_student = select_department_id(sess)
-        case "first/last name":
-            old_student = select_department_first_and_last_name(sess)
-        case "email":
-            old_student = select_student_email(sess)
-        case _:
-            old_student = None
-    return old_student
-
 
 def delete_department(session: Session):
     """
@@ -151,8 +72,8 @@ def delete_department(session: Session):
     :return:        None
     """
     print("deleting a student")
-    oldStudent = find_department(session)
-    session.delete(oldStudent)
+    OldDepartment = select_department_from_list(session)
+    session.delete(OldDepartment)
 
 
 def list_departments(session: Session):
@@ -163,9 +84,9 @@ def list_departments(session: Session):
     """
     # session.query returns an iterator.  The list function converts that iterator
     # into a list of elements.  In this case, they are instances of the Student class.
-    students: [Department] = list(session.query(Department).order_by(Department.lastName, Department.firstName))
-    for student in students:
-        print(student)
+    departments: [Department] = list(session.query(Department).order_by(Department.department_name))
+    for department in departments:
+        print(department)
 
 
 def select_department_from_list(session):
@@ -180,21 +101,22 @@ def select_department_from_list(session):
     """
     # query returns an iterator of Student objects, I want to put those into a list.  Technically,
     # that was not necessary, I could have just iterated through the query output directly.
-    students: [Department] = list(sess.query(Department).order_by(Department.lastName, Department.firstName))
+    departments: [Department] = list(session.query(Department).order_by(Department.department_name))
     options: [Option] = []                      # The list of menu options that we're constructing.
-    for student in students:
+    for department in departments:
         # Each time we construct an Option instance, we put the full name of the student into
         # the "prompt" and then the student ID (albeit as a string) in as the "action".
-        options.append(Option(student.lastName + ', ' + student.firstName, student.studentId))
-    temp_menu = Menu('Student list', 'Select a student from this list', options)
+        options.append(Option(department.department_name, department.department_name))
+    temp_menu = Menu('Department list', 'Select a department from this list', options)
     # text_studentId is the "action" corresponding to the student that the user selected.
-    text_studentId: str = temp_menu.menu_prompt()
+    text_department_name: str = temp_menu.menu_prompt()
     # get that student by selecting based on the int version of the student id corresponding
     # to the student that the user selected.
-    returned_student = sess.query(Department).filter(Department.studentId == int(text_studentId)).first()
+    selected_department = session.query(Department).filter(Department.department_name == str(text_department_name)).first()
     # this is really just to prove the point.  Ideally, we would return the student, but that
     # will present challenges in the exec call, so I didn't bother.
-    print("Selected student: ", returned_student)
+    print("Selected department: ", selected_department)
+    return selected_department
 
 
 if __name__ == '__main__':

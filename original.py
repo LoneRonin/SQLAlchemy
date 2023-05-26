@@ -111,7 +111,7 @@ def find_student(sess: Session) -> Student:
     """
     find_student_command = student_select.menu_prompt()
     match find_student_command:
-        case "ID":
+        case "department name":
             old_student = select_student_id(sess)
         case "first/last name":
             old_student = select_student_first_and_last_name(sess)

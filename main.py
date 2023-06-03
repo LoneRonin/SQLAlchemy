@@ -208,7 +208,7 @@ def add_department(session: Session):
         office = int(input("Office number--> "))
         description = input("Description--> ")
 
-        department_count: int = session.query(Department).filter(Department.department_name == department_name).count()
+        department_count: int = session.query(Department).filter(Department.departmentName == department_name).count()
         unique_department = department_count == 0
         if not unique_department:
             print("We already have a department by that name.  Try again.")
@@ -218,7 +218,7 @@ def add_department(session: Session):
             if not unique_abbreviation:
                 print("We already have a abbreviation by that name.  Try again.")
             if unique_abbreviation:
-                chair_count = session.query(Department).filter(Department.chair_name == chair_name).count()
+                chair_count = session.query(Department).filter(Department.chairName == chair_name).count()
                 unique_chair_name = chair_count == 0
                 if not unique_chair_name:
                     print("We already have a department with that professor.  Try again.")
@@ -417,8 +417,7 @@ def move_course_to_new_department(sess: Session):
         if unique_name:
             # Make sure that moving the course will not violate the {departmentAbbreviation,
             # course number} uniqueness constraint.
-            number_count = sess.query(Course). \
-                filter(Course.departmentAbbreviation == new_department.abbreviation,
+            number_count = sess.query(Course).filter(Course.departmentAbbreviation == new_department.abbreviation,
                        Course.courseNumber == course.courseNumber).count()
             if number_count != 0:
                 print("We already have a course by that number in that department.  Try again.")
@@ -432,12 +431,13 @@ def list_department_courses(sess: Session):
     for dept_course in dept_courses:
         print(dept_course)
 
-def delete_courses(sess: Session):
+def delete_course(sess: Session):
     print("Deleting a course")
+    found: bool = False
     while not found:
         OldCourse = select_course(sess)
 
-        section_count = sess.query(Section).filter(Section.courseId == OldCourse.courseId).count()
+        section_count = sess.query(Section).filter(Section.courseNumber == OldCourse.courseNumber).count()
 
         if section_count > 0:
             print("Cannot delete the course because it has associated sections.")
@@ -492,24 +492,24 @@ def add_section(sess: Session):
                                                     Section.schedule == schedule, Section.startTime == startTime,
                                                     Section.building == building, Section.room == room).count()
             unique_year = unique_semester = unique_schedule = unique_startTime = unique_building = \
-                unique_room = key1_count == 1
+                unique_room = key1_count == 0
             if not unique_year:
                 print("We already have a section similar.  Try again.")
-        elif unique_number:
+        if unique_number:
             key2_count = sess.query(Section).filter(Section.sectionYear == year, Section.semester == semester,
                                                     Section.schedule == schedule, Section.startTime == startTime,
                                                     Section.instructor == instructor).count()
             unique_year = unique_semester = unique_schedule = unique_startTime = unique_building = \
-                unique_room = key2_count == 1
+                unique_room = key2_count == 0
             if not unique_year:
                 print("We already have a section similar.  Try again.")
 
-    new_section = Section(course.courseId, section_number, semester, year, building, room, schedule, startTime,
+    new_section = Section(course, section_number, semester, year, building, room, schedule, startTime,
                           instructor)
     sess.add(new_section)
     print("Section added successfully.")
 
-def list_section(sess: Session):
+def list_course_sections(sess: Session):
     sections: [Section] = list(sess.query(Section).order_by(Section.sectionNumber))
     for section in sections:
         print(section)
@@ -518,16 +518,20 @@ def select_section(sess: Session) -> Section:
     found: bool = False
     department_abbreviation: str = ''
     course_number: int = -1
+    section_number: int = -1
     while not found:
         department_abbreviation = input("Department abbreviation--> ")
         course_number = int(input("Course Number--> "))
-        name_count: int = sess.query(Course).filter(Course.departmentAbbreviation == department_abbreviation,
-                                                    Course.courseNumber == course_number).count()
+        section_number = int(input("Section Number--> "))
+        name_count: int = sess.query(Section).filter(Section.departmentAbbreviation == department_abbreviation,
+                                                    Section.courseNumber == course_number,
+                                                     Section.sectionNumber == section_number).count()
         found = name_count == 1
         if not found:
-            print("No course by that number in that department.  Try again.")
-    section = sess.query(Course).filter(Course.departmentAbbreviation == department_abbreviation,
-                                       Course.courseNumber == course_number).first()
+            print("No section by that number in that course.  Try again.")
+    section = sess.query(Section).filter(Section.departmentAbbreviation == department_abbreviation,
+                                       Section.courseNumber == course_number,
+                                         Section.sectionNumber == section_number).first()
     return section
 
 def delete_section(sess: Session):

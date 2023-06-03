@@ -10,10 +10,10 @@ class Department(Base):
     to the university.  For instance, open enrollment students have not (yet) been
     admitted to the university, but they are still students."""
     __tablename__ = "department"  # Give SQLAlchemy th name of the table.
-    department_name: Mapped[int] = mapped_column('department_name', String(50),
+    departmentName: Mapped[int] = mapped_column('department_name', String(50),
                                            nullable=False, primary_key=True)
     abbreviation: Mapped[str] = mapped_column('abbreviation', String(6), nullable=False)
-    chair_name: Mapped[str] = mapped_column('chair_name', String(80), nullable=False)
+    chairName: Mapped[str] = mapped_column('chair_name', String(80), nullable=False)
     building: Mapped[str] = mapped_column('building', String(10), nullable=False)
     office: Mapped[str] = mapped_column('office', Integer, nullable=False)
     description: Mapped[str] = mapped_column('description', String(80), nullable=False)
@@ -38,16 +38,16 @@ class Department(Base):
     def get_courses(self):
         return self.courses
 
-    def __init__(self, department_name: str, abbreviation: str, chair_name: str, building: str, office: int,
+    def __init__(self, departmentName: str, abbreviation: str, chairName: str, building: str, office: int,
                  description: str):
-        self.department_name = department_name
+        self.departmentName = departmentName
         self.abbreviation = abbreviation
-        self.chair_name = chair_name
+        self.chairName = chairName
         self.building = building
         self.office = office
         self.description = description
 
     def __str__(self):
-        return f"Department: {self.department_name} Abbreviation: {self.abbreviation}\nChair Name: {self.chair_name}" \
+        return f"Department: {self.departmentName} Abbreviation: {self.abbreviation}\nChair Name: {self.chairName}" \
                f"\nBuilding: {self.building}, Office: {self.office}\n{self.description}\n" \
                f"Number Courses Offered:{len(self.courses)}"

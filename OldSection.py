@@ -1,21 +1,19 @@
 from orm_base import Base
-from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy import String, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from Course import Course
-from typing import List
+from sqlalchemy import Column, Integer, String, Time, create_engine, ForeignKey, CheckConstraint, UniqueConstraint
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import ForeignKeyConstraint, PrimaryKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 from datetime import time
-from sqlalchemy.types import Time
+from Course import Course
 
 class Section(Base):
+    __tablename__ = "section"
 
-    __tablename__ = "section"  # Give SQLAlchemy th name of the table.
-
-    departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation', String(10), primary_key=True)
-
-    course: Mapped["Course"] = relationship(back_populates="sections")
-
-    courseNumber: Mapped[int] = mapped_column('course_number', Integer, primary_key=True)
+    departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation', String(10),
+#                                                        ForeignKey("departments.abbreviation"),
+                                                        primary_key=True)
+    courseNumber: Mapped[int] = mapped_column('course_number', Integer,# ForeignKey("courses.courseNumber"),
+                                              primary_key=True)
     sectionNumber: Mapped[int] = mapped_column('section_number', Integer, nullable=False, primary_key=True)
     semester: Mapped[str] = mapped_column('semester', String(10), nullable=False, primary_key=True)
     sectionYear: Mapped[int] = mapped_column('section_year', Integer, nullable=False, primary_key=True)
@@ -25,14 +23,18 @@ class Section(Base):
     startTime: Mapped[time] = mapped_column('start_time', Time, nullable=False)
     instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 
-    __table_args__ = (UniqueConstraint("section_year", "semester", "schedule", "start_time", "building", "room",
+    course: Mapped["Course"] = relationship(back_populates="sections")
+
+    __table_args__ = (
+        UniqueConstraint("section_year", "semester", "schedule", "start_time", "building", "room",
                         name="section_uk_01"),
         UniqueConstraint("section_year", "semester", "schedule", "start_time", "instructor", name="section_uk_02"),
-        ForeignKeyConstraint([departmentAbbreviation, courseNumber],
-                                           [Course.departmentAbbreviation, Course.courseNumber]))
+        #ForeignKeyConstraint([departmentAbbreviation], [Course.departmentAbbreviation]),
+        ForeignKeyConstraint([courseNumber], [Course.courseNumber])
+    )
 
     def __init__(self, course: Course, sectionNumber: int, semester: str, sectionYear: int, building: str, room: int,
-                 schedule: str, startTime, instructor: str):
+                 schedule: str, startTime: time, instructor: str):
         self.set_course(course)
         self.sectionNumber = sectionNumber
         self.semester = semester
@@ -43,9 +45,8 @@ class Section(Base):
         self.startTime = startTime
         self.instructor = instructor
 
-    def set_course(self, course: Course):
+    def set_course(self, course: 'Course'):
         self.course = course
-        self.departmentAbbreviation = course.departmentAbbreviation
         self.courseNumber = course.courseNumber
 
     def __str__(self):

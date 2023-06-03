@@ -36,8 +36,7 @@ class Course(Base):
     # send to the database.  In this case, that we want two separate uniqueness
     # constraints (candidate keys).
     __table_args__ = (UniqueConstraint("department_abbreviation", "name", name="courses_uk_01"),
-                      ForeignKeyConstraint([departmentAbbreviation],
-                                           [Department.abbreviation]))
+                      ForeignKeyConstraint([departmentAbbreviation], [Department.abbreviation]))
 
     def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):
         self.set_department(department)
@@ -57,16 +56,16 @@ class Course(Base):
         self.department = department
         self.departmentAbbreviation = department.abbreviation
 
-        def add_section(self, section):
-            if section not in self.sections:
-                self.sections.add(section)  # I believe this will update the section as well.
+    def add_section(self, section):
+        if section not in self.sections:
+            self.sections.add(section)  # I believe this will update the section as well.
 
-        def remove_section(self, section):
-            if section in self.sections:
-                self.sections.remove(section)
+    def remove_section(self, section):
+        if section in self.sections:
+            self.sections.remove(section)
 
-        def get_sections(self):
-            return self.sections
+    def get_sections(self):
+        return self.sections
 
     def __str__(self):
         return f"Department abbrev: {self.departmentAbbreviation} number: {self.courseNumber} name: {self.name} units: {self.units}"

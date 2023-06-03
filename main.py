@@ -243,7 +243,12 @@ def delete_department(session: Session):
     """
     print("deleting a department")
     OldDepartment = select_department_from_list(session)
-    session.delete(OldDepartment)
+    n_courses = session.query(Course).filter(Course.departmentAbbreviation == OldDepartment.abbreviation).count()
+    if n_courses > 0:
+        print(f"Sorry, there are {n_courses} courses in that department.  Delete them first, "
+              "then come back here to delete the department.")
+    else:
+        session.delete(OldDepartment)
 
 
 def list_departments(session: Session):
@@ -439,28 +444,6 @@ def delete_courses(sess: Session):
     print("Course deleted.")
 
 def add_section(sess: Session):
-    """    abbreviation_count: int = session.query(Department).filter(Department.abbreviation == abbreviation).count()
-
-        unique_abbreviation = abbreviation_count == 0
-        if not unique_abbreviation:
-            print("We already have a abbreviation by that name.  Try again.")
-        if unique_abbreviation:
-            chair_count = session.query(Department).filter(Department.chair_name == chair_name).count()
-            unique_chair_name = chair_count == 0
-            if not unique_chair_name:
-                print("We already have a department with that professor.  Try again.")
-            if unique_chair_name:
-                office_count: int = session.query(Department).filter(Department.building == building,
-                                                                     Department.office == office).count()
-                unique_office = office_count == 0
-                if not unique_office:
-                    print("That office currently already is occupied.  Try again.")
-                if unique_office:
-                    description_count: int = session.query(Department).filter(Department.description == description).count()
-                    unique_description = description_count == 0
-                    if not unique_description:
-                        print("We already have that description.  Try again.")
-    """
     print("Adding a new section")
     course = select_course(sess)
 
@@ -485,27 +468,40 @@ def add_section(sess: Session):
                 unique_room) or (unique_year and unique_semester and unique_schedule and unique_startTime
                                  and unique_instructor):
         section_number = int(input("Section number--> "))
+        year = int(input("Section Year--> "))
+        semester = input("Semester--> ")
+        schedule = input("Schedule--> ")
+        startTime = time(int(input("Start Time--> ")))
+        building = input("Building--> ")
+        room = int(input("Room--> "))
+        instructor = input("Instructor--> ")
 
-        section_count = sess.query(Section).filter(
-            Section.courseId == course.courseId,
-            Section.sectionNumber == section_number
-        ).count()
+        section_count = sess.query(Section).filter(Section.courseNumber == course.courseNumber,
+            Section.sectionNumber == section_number).count()
 
         unique_number = section_count == 0
 
         if not unique_number:
             print("A section with that number already exists for this course. Try again.")
         if unique_number:
-            year_count = session.query(Department).filter(Department.chair_name == chair_name).count()
-            unique_chair_name = chair_count == 0
-            if not unique_chair_name:
-                print("We already have a department with that professor.  Try again.")
+            key1_count = sess.query(Section).filter(Section.sectionYear == year, Section.semester == semester,
+                                                    Section.schedule == schedule, Section.startTime == startTime,
+                                                    Section.building == building, Section.room == room).count()
+            unique_year = unique_semester = unique_schedule = unique_startTime = unique_building = \
+                unique_room = key1_count == 1
+            if not unique_year:
+                print("We already have a section similar.  Try again.")
+        elif unique_number:
+            key2_count = sess.query(Section).filter(Section.sectionYear == year, Section.semester == semester,
+                                                    Section.schedule == schedule, Section.startTime == startTime,
+                                                    Section.instructor == instructor).count()
+            unique_year = unique_semester = unique_schedule = unique_startTime = unique_building = \
+                unique_room = key2_count == 1
+            if not unique_year:
+                print("We already have a section similar.  Try again.")
 
-
-    semester = input("Semester--> ")
-    instructor = input("Instructor--> ")
-
-    new_section = Section(course.courseId, section_number, semester, instructor)
+    new_section = Section(course.courseId, section_number, semester, year, building, room, schedule, startTime,
+                          instructor)
     sess.add(new_section)
     print("Section added successfully.")
 

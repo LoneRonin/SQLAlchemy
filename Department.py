@@ -1,8 +1,8 @@
 from orm_base import Base
 from sqlalchemy import Column, Integer, UniqueConstraint
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List
 
 class Department(Base):
     """An individual who is currently enrolled or has explicitly stated an intent
@@ -17,6 +17,8 @@ class Department(Base):
     building: Mapped[str] = mapped_column('building', String(10), nullable=False)
     office: Mapped[str] = mapped_column('office', Integer, nullable=False)
     description: Mapped[str] = mapped_column('description', String(80), nullable=False)
+    # child class course
+    courses: Mapped[List["Course"]] = relationship(back_populates="department")
     # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
     # send to the database.  In this case, that we want four separate uniqueness
     # constraints (candidate keys).
@@ -25,7 +27,8 @@ class Department(Base):
                       UniqueConstraint("building", "office", name="departments_uk_03"),
                       UniqueConstraint("description", name="departments_uk_04"))
 
-    def __init__(self, department_name: str, abbreviation: str, chair_name: str, building: str, office: int, description: str):
+    def __init__(self, department_name: str, abbreviation: str, chair_name: str, building: str, office: int,
+                 description: str):
         self.department_name = department_name
         self.abbreviation = abbreviation
         self.chair_name = chair_name
@@ -34,4 +37,7 @@ class Department(Base):
         self.description = description
 
     def __str__(self):
-        return f"Department: {self.department_name} Abbreviation: {self.abbreviation}\nChair Name: {self.chair_name}\nBuilding: {self.building}, Office: {self.office}\n{self.description}"
+        return f"Department: {self.department_name} Abbreviation: {self.abbreviation}\nChair Name: {self.chair_name}" \
+               f"\nBuilding: {self.building}, Office: {self.office}\n{self.description}\n" \
+               f"Number Courses Offered:{len(self.courses)}"
+    

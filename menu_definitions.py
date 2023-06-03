@@ -15,12 +15,12 @@ variables or not in Python.
 menu_main = Menu('main', 'Please select one of the following options:', [
     Option("Add department", "add_department(sess)"),
     Option("Add course", "add_course(sess)"),
-    #Option("Add section", "add_section(sess)"),
+    Option("Add section", "add_section(sess)"),
     Option("Add student", "add_student(sess)"),
 
     Option("Delete department", "delete_department(sess)"),
     Option("Delete course", "delete_course(sess)"),
-    #Option("Delete section", "delete_section(sess)"),
+    Option("Delete section", "delete_section(sess)"),
     Option("Delete student", "delete_student(sess)"),
 
     Option("List all departments", "list_departments(sess)"),
@@ -28,7 +28,7 @@ menu_main = Menu('main', 'Please select one of the following options:', [
     Option("List all students", "list_students(sess)"),
 
     Option("Select department from list", "select_department_from_list(sess)"),
-    #Option("List sections within a course", "list_course_sections(sess)"),
+    Option("List sections within a course", "list_course_sections(sess)"),
     Option("Select student from list", "select_student_from_list(sess)"),
 
     Option("Move course to new department", "move_course_to_new_department(sess)"),

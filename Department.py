@@ -27,6 +27,17 @@ class Department(Base):
                       UniqueConstraint("building", "office", name="departments_uk_03"),
                       UniqueConstraint("description", name="departments_uk_04"))
 
+    def add_course(self, course):
+        if course not in self.courses:
+            self.courses.add(course)            # I believe this will update the course as well.
+
+    def remove_course(self, course):
+        if course in self.courses:
+            self.courses.remove(course)
+
+    def get_courses(self):
+        return self.courses
+
     def __init__(self, department_name: str, abbreviation: str, chair_name: str, building: str, office: int,
                  description: str):
         self.department_name = department_name
@@ -40,4 +51,3 @@ class Department(Base):
         return f"Department: {self.department_name} Abbreviation: {self.abbreviation}\nChair Name: {self.chair_name}" \
                f"\nBuilding: {self.building}, Office: {self.office}\n{self.description}\n" \
                f"Number Courses Offered:{len(self.courses)}"
-    

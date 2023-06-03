@@ -7,8 +7,11 @@ from orm_base import metadata
 from Student import Student
 from Department import Department
 from Course import Course
+from Section import Section
 from Option import Option
 from Menu import Menu
+
+from datetime import time
 
 def add_student(session: Session):
     """
@@ -238,7 +241,7 @@ def delete_department(session: Session):
     :param session: The connection to the database.
     :return:        None
     """
-    print("deleting a student")
+    print("deleting a department")
     OldDepartment = select_department_from_list(session)
     session.delete(OldDepartment)
 
@@ -256,7 +259,7 @@ def list_departments(session: Session):
         print(department)
 
 
-def select_department_from_list(session):
+def select_department_from_list(session: Session):
     """
     This is just a cute little use of the Menu object.  Basically, I create a
     menu on the fly from data selected from the database, and then use the
@@ -413,12 +416,124 @@ def move_course_to_new_department(sess: Session):
             else:
                 course.set_department(new_department)
 
-def list_department_courses(sess):
+def list_department_courses(sess: Session):
     department = select_department(sess)
     dept_courses: [Course] = department.get_courses()
     print("Course for department: " + str(department))
     for dept_course in dept_courses:
         print(dept_course)
+
+def delete_courses(sess: Session):
+    print("Deleting a course")
+    while not found:
+        OldCourse = select_course(sess)
+
+        section_count = sess.query(Section).filter(Section.courseId == OldCourse.courseId).count()
+
+        if section_count > 0:
+            print("Cannot delete the course because it has associated sections.")
+        else:
+            found = 1
+
+    sess.delete(OldCourse)
+    print("Course deleted.")
+
+def add_section(sess: Session):
+    """    abbreviation_count: int = session.query(Department).filter(Department.abbreviation == abbreviation).count()
+
+        unique_abbreviation = abbreviation_count == 0
+        if not unique_abbreviation:
+            print("We already have a abbreviation by that name.  Try again.")
+        if unique_abbreviation:
+            chair_count = session.query(Department).filter(Department.chair_name == chair_name).count()
+            unique_chair_name = chair_count == 0
+            if not unique_chair_name:
+                print("We already have a department with that professor.  Try again.")
+            if unique_chair_name:
+                office_count: int = session.query(Department).filter(Department.building == building,
+                                                                     Department.office == office).count()
+                unique_office = office_count == 0
+                if not unique_office:
+                    print("That office currently already is occupied.  Try again.")
+                if unique_office:
+                    description_count: int = session.query(Department).filter(Department.description == description).count()
+                    unique_description = description_count == 0
+                    if not unique_description:
+                        print("We already have that description.  Try again.")
+    """
+    print("Adding a new section")
+    course = select_course(sess)
+
+    unique_year: bool = False
+    unique_semester: bool = False
+    unique_schedule: bool = False
+    unique_startTime: bool = False
+    unique_building: bool = False
+    unique_room: bool = False
+    unique_instructor: bool = False
+
+    section_number: int = -1
+    year: int = -1
+    semester: str = ''
+    schedule: str = ''
+    startTime: time = time(0, 0, 0)
+    building: str = ''
+    room: int = -1
+    instructor: str = ''
+
+    while not (unique_year and unique_semester and unique_schedule and unique_startTime and unique_building and
+                unique_room) or (unique_year and unique_semester and unique_schedule and unique_startTime
+                                 and unique_instructor):
+        section_number = int(input("Section number--> "))
+
+        section_count = sess.query(Section).filter(
+            Section.courseId == course.courseId,
+            Section.sectionNumber == section_number
+        ).count()
+
+        unique_number = section_count == 0
+
+        if not unique_number:
+            print("A section with that number already exists for this course. Try again.")
+        if unique_number:
+            year_count = session.query(Department).filter(Department.chair_name == chair_name).count()
+            unique_chair_name = chair_count == 0
+            if not unique_chair_name:
+                print("We already have a department with that professor.  Try again.")
+
+
+    semester = input("Semester--> ")
+    instructor = input("Instructor--> ")
+
+    new_section = Section(course.courseId, section_number, semester, instructor)
+    sess.add(new_section)
+    print("Section added successfully.")
+
+def list_section(sess: Session):
+    sections: [Section] = list(sess.query(Section).order_by(Section.sectionNumber))
+    for section in sections:
+        print(section)
+
+def select_section(sess: Session) -> Section:
+    found: bool = False
+    department_abbreviation: str = ''
+    course_number: int = -1
+    while not found:
+        department_abbreviation = input("Department abbreviation--> ")
+        course_number = int(input("Course Number--> "))
+        name_count: int = sess.query(Course).filter(Course.departmentAbbreviation == department_abbreviation,
+                                                    Course.courseNumber == course_number).count()
+        found = name_count == 1
+        if not found:
+            print("No course by that number in that department.  Try again.")
+    section = sess.query(Course).filter(Course.departmentAbbreviation == department_abbreviation,
+                                       Course.courseNumber == course_number).first()
+    return section
+
+def delete_section(sess: Session):
+    print("Deleting a section")
+    OldSection = select_section(sess)
+    sess.delete(OldSection)
 
 if __name__ == '__main__':
     print('Starting off')

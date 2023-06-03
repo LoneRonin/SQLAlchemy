@@ -9,7 +9,7 @@ class Department(Base):
     to enroll in one or more classes.  Said individuals may or may not be admitted
     to the university.  For instance, open enrollment students have not (yet) been
     admitted to the university, but they are still students."""
-    __tablename__ = "departments"  # Give SQLAlchemy th name of the table.
+    __tablename__ = "department"  # Give SQLAlchemy th name of the table.
     department_name: Mapped[int] = mapped_column('department_name', String(50),
                                            nullable=False, primary_key=True)
     abbreviation: Mapped[str] = mapped_column('abbreviation', String(6), nullable=False)
@@ -22,10 +22,10 @@ class Department(Base):
     # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
     # send to the database.  In this case, that we want four separate uniqueness
     # constraints (candidate keys).
-    __table_args__ = (UniqueConstraint("abbreviation", name="departments_uk_01"),
-                      UniqueConstraint("chair_name", name="departments_uk_02"),
-                      UniqueConstraint("building", "office", name="departments_uk_03"),
-                      UniqueConstraint("description", name="departments_uk_04"))
+    __table_args__ = (UniqueConstraint("abbreviation", name="department_uk_01"),
+                      UniqueConstraint("chair_name", name="department_uk_02"),
+                      UniqueConstraint("building", "office", name="department_uk_03"),
+                      UniqueConstraint("description", name="department_uk_04"))
 
     def add_course(self, course):
         if course not in self.courses:

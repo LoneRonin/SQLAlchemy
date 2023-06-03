@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from Course import Course
 
 class Section(Base):
-    __tablename__ = "sections"
+    __tablename__ = "section"
 
     departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation', String(10),
                                                         ForeignKey("departments.abbreviation"), primary_key=True)
@@ -32,8 +32,8 @@ class Section(Base):
 
     __table_args__ = (
         UniqueConstraint("section_year", "semester", "schedule", "start_time", "building", "room",
-                        name="sections_uk_01"),
-        UniqueConstraint("section_year", "semester", "schedule", "start_time", "instructor", name="sections_uk_02"),
+                        name="section_uk_01"),
+        UniqueConstraint("section_year", "semester", "schedule", "start_time", "instructor", name="section_uk_02"),
         ForeignKeyConstraint([departmentAbbreviation], [Course.departmentAbbreviation]),
         ForeignKeyConstraint([courseNumber], [Course.courseNumber])
     )

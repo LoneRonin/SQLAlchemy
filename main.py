@@ -186,7 +186,7 @@ def add_department(session: Session):
     :param session: The connection to the database.
     :return:        None
     """
-    #unique_department: bool = False
+    unique_department: bool = False
     unique_abbreviation: bool = False
     unique_chair_name: bool = False
     unique_office: bool = False
@@ -195,7 +195,7 @@ def add_department(session: Session):
     abbreviation: str = ''
     chair_name: str = ''
     building: str = ''
-    office: int = ''
+    office: int = -1
     description: str = ''
     # Note that there is no physical way for us to duplicate the student_id since we are
     # using the Identity "type" for studentId and allowing PostgreSQL to handle that.
@@ -208,28 +208,32 @@ def add_department(session: Session):
         office = int(input("Office number--> "))
         description = input("Description--> ")
 
-        abbreviation_count: int = session.query(Department).filter(Department.abbreviation == abbreviation).count()
-
-        unique_abbreviation = abbreviation_count == 0
-        if not unique_abbreviation:
-            print("We already have a abbreviation by that name.  Try again.")
-        if unique_abbreviation:
-            chair_count = session.query(Department).filter(Department.chair_name == chair_name).count()
-            unique_chair_name = chair_count == 0
-            if not unique_chair_name:
-                print("We already have a department with that professor.  Try again.")
-            if unique_chair_name:
-                office_count: int = session.query(Department).filter(Department.building == building,
+        department_count: int = session.query(Department).filter(Department.department_name == department_name).count()
+        unique_department = department_count == 0
+        if not unique_department:
+            print("We already have a department by that name.  Try again.")
+        if unique_department:
+            abbreviation_count: int = session.query(Department).filter(Department.abbreviation == abbreviation).count()
+            unique_abbreviation = abbreviation_count == 0
+            if not unique_abbreviation:
+                print("We already have a abbreviation by that name.  Try again.")
+            if unique_abbreviation:
+                chair_count = session.query(Department).filter(Department.chair_name == chair_name).count()
+                unique_chair_name = chair_count == 0
+                if not unique_chair_name:
+                    print("We already have a department with that professor.  Try again.")
+                if unique_chair_name:
+                    office_count: int = session.query(Department).filter(Department.building == building,
                                                                 Department.office == office).count()
-                unique_office = office_count == 0
-                if not unique_office:
-                    print("That office currently already is occupied.  Try again.")
-                if unique_office:
-                    description_count: int = session.query(Department).filter(Department.description == description).count()
-                    unique_description = description_count == 0
-                    if not unique_description:
-                        print("We already have that description.  Try again.")
-
+                    unique_office = office_count == 0
+                    if not unique_office:
+                        print("That office currently already is occupied.  Try again.")
+                    if unique_office:
+                        description_count: int = session.query(Department).filter(
+                            Department.description == description).count()
+                        unique_description = description_count == 0
+                        if not unique_description:
+                            print("We already have that description.  Try again.")
 
     newDepartment = Department(department_name, abbreviation, chair_name, building, office, description)
     session.add(newDepartment)

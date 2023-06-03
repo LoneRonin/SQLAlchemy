@@ -9,7 +9,7 @@ class Course(Base):
     """A catalog entry.  Each course proposes to offer students who enroll in
     a section of the course an organized sequence of lessons and assignments
     aimed at teaching them specified skills."""
-    __tablename__ = "courses"  # Give SQLAlchemy th name of the table.
+    __tablename__ = "course"  # Give SQLAlchemy th name of the table.
     """
     The ForeignKey argument to the mapped_column method is not needed because I am 
     specifying this foreign key constraint in the __table_args__ call farther down
@@ -31,11 +31,11 @@ class Course(Base):
     description: Mapped[str] = mapped_column('description', String(500), nullable=False)
     units: Mapped[int] = mapped_column('units', Integer, nullable=False)
 
-    sections: Mapped[List["Section"]] = relationship(back_populates="courses")
+    sections: Mapped[List["Section"]] = relationship(back_populates="course")
     # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
     # send to the database.  In this case, that we want two separate uniqueness
     # constraints (candidate keys).
-    __table_args__ = (UniqueConstraint("department_abbreviation", "name", name="courses_uk_01"),
+    __table_args__ = (UniqueConstraint("department_abbreviation", "name", name="course_uk_01"),
                       ForeignKeyConstraint([departmentAbbreviation], [Department.abbreviation]))
 
     def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):

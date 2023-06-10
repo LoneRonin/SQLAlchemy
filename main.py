@@ -168,7 +168,6 @@ def delete_student(session: Session):
     """
     session.delete(student)
 
-
 def list_students(session: Session):
     """
     List all of the students, sorted by the last name first, then the first name.

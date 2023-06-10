@@ -14,6 +14,7 @@ from Major import Major
 from Student import Student
 from Section import Section
 from StudentMajor import StudentMajor
+from Enrollment import Enrollment
 from Option import Option
 from Menu import Menu
 
@@ -539,7 +540,7 @@ def add_section(sess: Session):
     print("Section added successfully.")
 
 def list_section_course(sess):
-    sections: [Section] = list(sess.query(Section).order_by(Section.section_number))
+    sections: [Section] = list(sess.query(Section).order_by(Section.sectionNumber))
     for section in sections:
         print(section)
 
@@ -710,6 +711,96 @@ def list_major_student(sess: Session):
         Student.lastName, Student.firstName, Major.description, Major.name).all()
     for stu in recs:
         print(f"Student name: {stu.lastName}, {stu.firstName}, Major: {stu.name}, Description: {stu.description}")
+
+def add_student_section(sess):
+    student: Student = select_student(sess)
+    section: Section = select_section(sess)
+    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
+                                                               Enrollment.sectionId == section.sectionId).count()
+    unique_student_section: bool = student_section_count == 0
+    while not unique_student_section:
+        print("That student already has that section.  Try again.")
+        student = select_student(sess)
+        section = select_section(sess)
+    student.add_section(section)
+    sess.add(student)                           # add the StudentMajor to the session
+    sess.flush()
+
+def add_section_student(sess):
+    section: Section = select_section(sess)
+    student: Student = select_student(sess)
+    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
+                                                               Enrollment.sectionId == section.sectionId).count()
+    unique_student_section: bool = student_section_count == 0
+    while not unique_student_section:
+        print("That section already has that student.  Try again.")
+        section = select_section(sess)
+        student = select_student(sess)
+    section.add_student(student)
+    sess.add(section)                           # add the StudentMajor to the session
+    sess.flush()
+
+def unenroll_student_section(sess):
+    """Undeclare a student from a particular major.
+    :param sess:    The current database session.
+    :return:        None
+    """
+    print("Prompting you for the student and the major that they no longer have.")
+    student: Student = select_student(sess)
+    section: Section = select_section(sess)
+    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
+                                                               Enrollment.sectionId == section.sectionId).count()
+    unique_student_section: bool = student_section_count == 0
+    while unique_student_section:
+        print("That student does not have that section.  Try again.")
+        student = select_student(sess)
+        section = select_section(sess)
+    student.remove_enrollment(section)
+
+def unenroll_section_student(sess):
+    """Remove a student from a particular major.
+    :param sess:    The current database session.
+    :return:        None
+    """
+    print("Prompting you for the major and the student who no longer has that major.")
+    section: Section = select_section(sess)
+    student: Student = select_student(sess)
+    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
+                                                               Enrollment.sectionId == section.sectionId).count()
+    unique_student_section: bool = student_section_count == 0
+    while unique_student_section:
+        print("That section does not have that student.  Try again.")
+        section = select_section(sess)
+        student = select_student(sess)
+    section.remove_enrollment(student)
+
+def list_student_section(sess: Session):
+    """Prompt the user for the student, and then list the majors that the student has declared.
+    :param sess:    The connection to the database
+    :return:        None
+    """
+    student: Student = select_student(sess)
+    recs = sess.query(Student).join(Enrollment, Student.studentId == Enrollment.studentId).join(
+        Section, Enrollment.sectionId == Section.sectionId).filter(
+        Student.studentId == student.studentId).add_columns(
+        Student.lastName, Student.firstName, Section.courseNumber, Section.sectionNumber).all()
+    for stu in recs:
+        print(f"Student name: {stu.lastName}, {stu.firstName}, Course Number: {stu.courseNumber},"
+              f" Section: {stu.sectionNumber}")
+
+def list_section_student(sess: Session):
+    """Prompt the user for the major, then list the students who have that major declared.
+    :param sess:    The connection to the database.
+    :return:        None
+    """
+    section: Section = select_section(sess)
+    recs = sess.query(Section).join(Enrollment, Enrollment.sectionId == Section.sectionId).join(
+        Student, Enrollment.studentId == Student.studentId).filter(
+        Section.sectionId == section.sectionId).add_columns(
+        Student.lastName, Student.firstName, Section.courseNumber, Section.sectionNumber).all()
+    for stu in recs:
+        print(f"Student name: {stu.lastName}, {stu.firstName}, Course Number: {stu.courseNumber},"
+              f" Section: {stu.sectionNumber}")
 
 def boilerplate(sess):
     """

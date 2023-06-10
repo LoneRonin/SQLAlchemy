@@ -95,7 +95,7 @@ class Student(Base):
                 self.section.remove(next_section)
                 return
 
-    def remove_enrollment(self, enrollment):
+    def remove_enrollment(self):
         self.remove_section
 
     def __str__(self):

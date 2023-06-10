@@ -84,6 +84,9 @@ class Section(Base):
                 self.student.remove(next_student)
                 return
 
+    def remove_enrollment(self):
+        self.remove_student
+
     def __str__(self):
         return f"Section {self.courseNumber} {self.sectionNumber} " \
                f"in {self.semester} {self.sectionYear} by {self.instructor} at {self.building} {self.room}, " \

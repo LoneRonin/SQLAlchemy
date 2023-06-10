@@ -18,6 +18,7 @@ class Department(Base):
     office: Mapped[str] = mapped_column('office', Integer, nullable=False)
     description: Mapped[str] = mapped_column('description', String(80), nullable=False)
     # child class course
+    majors: Mapped[List["Major"]] = relationship(back_populates="department")
     courses: Mapped[List["Course"]] = relationship(back_populates="department")
     # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
     # send to the database.  In this case, that we want four separate uniqueness

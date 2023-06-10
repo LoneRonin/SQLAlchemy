@@ -1,8 +1,10 @@
 from orm_base import Base
 from sqlalchemy import Column, Integer, UniqueConstraint, Identity
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List                 # Use this for the list of Majors that this student has
+from StudentMajor import StudentMajor
+from datetime import datetime
 
 class Student(Base):
     """An individual who is currently enrolled or has explicitly stated an intent
@@ -18,6 +20,10 @@ class Student(Base):
     # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
     # send to the database.  In this case, that we want two separate uniqueness
     # constraints (candidate keys).
+
+    majors: Mapped[List["StudentMajor"]] = relationship(back_populates="student",
+                                                        cascade="all, save-update, delete-orphan")
+
     __table_args__ = (UniqueConstraint("last_name", "first_name", name="students_uk_01"),
                       UniqueConstraint("e_mail", name="students_uk_02"))
 
@@ -25,6 +31,36 @@ class Student(Base):
         self.lastName = last_name
         self.firstName = first_name
         self.eMail = e_mail
+
+    def add_major(self, major):
+        """Add a new major to the student.  We are not actually adding a major directly
+        to the student.  Rather, we are adding an instance of StudentMajor to the student.
+        :param  major:  The Major that this student has declared.
+        :return:        None
+        """
+        # Make sure that this student does not already have this major.
+        for next_major in self.majors:
+            if next_major.major == major:
+                return  # This student already has this major
+        # Create the new instance of StudentMajor to connect this Student to the supplied Major.
+        student_major = StudentMajor(self, major, datetime.now())
+
+    #        major.students.append(student_major)                # Add this Student to the supplied Major.
+    #        self.majors.append(student_major)                   # Add the supplied Major to this student.
+
+    def remove_major(self, major):
+        """
+        Remove a major from the list of majors that a student presently has declared.
+        Essentially, we are UNdeclaring the major.  A bit contrived, but this is for
+        demonstration purposes.
+        :param major:
+        :return:
+        """
+        for next_major in self.majors:
+            # This item in the list is the major we are looking for for this student.
+            if next_major.major == major:
+                self.majors.remove(next_major)
+                return
 
     def __str__(self):
         return f"Student id: {self.studentId} name: {self.lastName}, {self.firstName}\nEmail Address: {self.eMail}"

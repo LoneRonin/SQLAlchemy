@@ -33,7 +33,7 @@ class Major(Base):
     to disassociate.  But to get that to work in the database, we need to configure
     the relationship such that breaking the association at this end propagates a 
     deletion in the association table to go along with it."""
-    students: Mapped[List["StudentMajor"]] = relationship(back_populates="major",
+    student: Mapped[List["StudentMajor"]] = relationship(back_populates="major",
                                                           cascade="all, save-update, delete-orphan")
 
     def set_department(self, department: Department):
@@ -53,7 +53,7 @@ class Major(Base):
         self.name = name
         self.description = description
 
-    def add_student(self, student):
+    def add_student(self, s):
         """Add a new student to the list of students in the major.  We are not adding a
         Student per se, but rather creating an instance of StudentMajor, and adding that
         new instance to our list of "students".  A parallel construct will exist on the
@@ -61,24 +61,24 @@ class Major(Base):
         major(s) that the student has.
         """
         # Make sure that this Major does not already have this Student.
-        for next_student in self.students:
-            if next_student.student == student:
+        for next_student in self.student:
+            if next_student.s == s:
                 return              # This student is already in this major.
         # create the necessary Association Class instance that connects This major to
         # the supplied student.
-        student_major = StudentMajor(student, self, datetime.now())
+        student_major = StudentMajor(s, self, datetime.now())
 #        student.majors.append(student_major)        # Add this new junction entry to the Student
 #        self.students.append(student_major)         # Add this new junction entry to this Major
 
-    def remove_student(self, student):
+    def remove_student(self, s):
         """Remove a student from this major, and remove this major from that student.
         :param student:     The Student to be removed from this major.
         :return:            None
         """
-        for next_student in self.students:
-            if next_student.student == student:
+        for next_student in self.student:
+            if next_student.s == s:
                 # Remove this major from the student's list of majors.
-                self.students.remove(next_student)
+                self.student.remove(next_student)
                 return
 
     def __str__(self):

@@ -1,6 +1,6 @@
 from orm_base import Base
 from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy import String, Integer
+from sqlalchemy import String, Integer, Identity
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from Course import Course
 from typing import List
@@ -26,12 +26,14 @@ class Section(Base):
     startTime: Mapped[time] = mapped_column('start_time', Time, nullable=False)
     instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 
-    sections: Mapped[List["Enrollment"]] = relationship(back_populates="student",
+    student: Mapped[List["Enrollment"]] = relationship(back_populates="student",
                                                         cascade="all, save-update, delete-orphan")
+    sectionId: Mapped[int] = mapped_column('section_id', Integer, Identity(start=1, cycle=True), primary_key=True)
 
     __table_args__ = (UniqueConstraint("section_year", "semester", "schedule", "start_time", "building", "room",
                         name="section_uk_01"),
         UniqueConstraint("section_year", "semester", "schedule", "start_time", "instructor", name="section_uk_02"),
+                      UniqueConstraint("section_id", name="sections_uk_03"),
         ForeignKeyConstraint([departmentAbbreviation, courseNumber],
                                            [Course.departmentAbbreviation, Course.courseNumber]))
 
@@ -52,23 +54,23 @@ class Section(Base):
         self.departmentAbbreviation = course.departmentAbbreviation
         self.courseNumber = course.courseNumber
 
-    def add_student(self, student):
+    def add_student(self, s):
         """Add a new major to the student.  We are not actually adding a major directly
         to the student.  Rather, we are adding an instance of StudentMajor to the student.
         :param  major:  The Major that this student has declared.
         :return:        None
         """
         # Make sure that this student does not already have this major.
-        for next_student in self.students:
-            if next_student.student == student:
+        for next_student in self.student:
+            if next_student.s == s:
                 return  # This student already has this major
         # Create the new instance of StudentMajor to connect this Student to the supplied Major.
-        section_student = Enrollment(self, student)
+        section_student = Enrollment(self, s)
 
     #        major.students.append(student_major)                # Add this Student to the supplied Major.
     #        self.majors.append(student_major)                   # Add the supplied Major to this student.
 
-    def remove_student(self, student):
+    def remove_student(self, s):
         """
         Remove a major from the list of majors that a student presently has declared.
         Essentially, we are UNdeclaring the major.  A bit contrived, but this is for
@@ -76,10 +78,10 @@ class Section(Base):
         :param major:
         :return:
         """
-        for next_student in self.students:
+        for next_student in self.student:
             # This item in the list is the major we are looking for for this student.
-            if next_student.student == student:
-                self.students.remove(next_student)
+            if next_student.s == s:
+                self.student.remove(next_student)
                 return
 
     def __str__(self):

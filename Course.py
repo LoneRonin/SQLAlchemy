@@ -31,7 +31,7 @@ class Course(Base):
     description: Mapped[str] = mapped_column('description', String(500), nullable=False)
     units: Mapped[int] = mapped_column('units', Integer, nullable=False)
     # Error  bc  of following line
-    sections: Mapped[List["Section"]] = relationship(back_populates="course")
+    section: Mapped[List["Section"]] = relationship(back_populates="course")
     # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
     # send to the database.  In this case, that we want two separate uniqueness
     # constraints (candidate keys).
@@ -56,16 +56,16 @@ class Course(Base):
         self.department = department
         self.departmentAbbreviation = department.abbreviation
 
-    def add_section(self, section):
-        if section not in self.sections:
-            self.sections.add(section)  # I believe this will update the section as well.
+    def add_section(self, s):
+        if s not in self.section:
+            self.section.add(s)  # I believe this will update the section as well.
 
-    def remove_section(self, section):
-        if section in self.sections:
-            self.sections.remove(section)
+    def remove_section(self, s):
+        if s in self.section:
+            self.section.remove(s)
 
     def get_sections(self):
-        return self.sections
+        return self.section
 
     def __str__(self):
         return f"Department abbrev: {self.departmentAbbreviation} number: {self.courseNumber} name: {self.name}" \

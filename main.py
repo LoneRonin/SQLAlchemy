@@ -719,7 +719,7 @@ def boilerplate(sess):
     :param sess:    The session that's open.
     :return:        None
     """
-    department: Department = Department('CECS', 'Computer Engineering Computer Science')
+    department: Department = Department('Computer Engineering Computer Science', 'CECS', 'Brown', 'ECS', '1', 'Yes')
     major1: Major = Major(department, 'Computer Science', 'Fun with blinking lights')
     major2: Major = Major(department, 'Computer Engineering', 'Much closer to the silicon')
     student1: Student = Student('Brown', 'David', 'david.brown@gmail.com')

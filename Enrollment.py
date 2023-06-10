@@ -7,9 +7,9 @@ class Enrollment(Base):
     __tablename__ = "enrollment"
 
     section: Mapped[List["Section"]] = relationship(back_populates="student")
-    student: Mapped[List["Student"]] = relationship(back_populates="section")
-
     sectionId: Mapped[int] = mapped_column('section_id', ForeignKey("section.section_id"), primary_key=True)
+
+    student: Mapped[List["Student"]] = relationship(back_populates="section")
     studentId: Mapped[int] = mapped_column('student_id', ForeignKey("student.student_id"), primary_key=True)
 
     def __init__(self, student, section):

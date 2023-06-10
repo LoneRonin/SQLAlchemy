@@ -4,6 +4,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List                 # Use this for the list of Majors that this student has
 from StudentMajor import StudentMajor
+from Enrollment import Enrollment
 from datetime import datetime
 
 class Student(Base):
@@ -11,7 +12,7 @@ class Student(Base):
     to enroll in one or more classes.  Said individuals may or may not be admitted
     to the university.  For instance, open enrollment students have not (yet) been
     admitted to the university, but they are still students."""
-    __tablename__ = "students"  # Give SQLAlchemy th name of the table.
+    __tablename__ = "student"  # Give SQLAlchemy th name of the table.
     studentId: Mapped[int] = mapped_column('student_id', Integer, Identity(start=1, cycle=True),
                                            nullable=False, primary_key=True)
     lastName: Mapped[str] = mapped_column('last_name', String(50), nullable=False)
@@ -21,6 +22,8 @@ class Student(Base):
     # send to the database.  In this case, that we want two separate uniqueness
     # constraints (candidate keys).
 
+    sections: Mapped[List["Enrollment"]] = relationship(back_populates="student",
+                                                        cascade="all, save-update, delete-orphan")
     majors: Mapped[List["StudentMajor"]] = relationship(back_populates="student",
                                                         cascade="all, save-update, delete-orphan")
 
@@ -60,6 +63,36 @@ class Student(Base):
             # This item in the list is the major we are looking for for this student.
             if next_major.major == major:
                 self.majors.remove(next_major)
+                return
+
+    def add_section(self, section):
+        """Add a new major to the student.  We are not actually adding a major directly
+        to the student.  Rather, we are adding an instance of StudentMajor to the student.
+        :param  major:  The Major that this student has declared.
+        :return:        None
+        """
+        # Make sure that this student does not already have this major.
+        for next_section in self.sections:
+            if next_section.section == section:
+                return  # This student already has this major
+        # Create the new instance of StudentMajor to connect this Student to the supplied Major.
+        student_section = Enrollment(self, section)
+
+    #        major.students.append(student_major)                # Add this Student to the supplied Major.
+    #        self.majors.append(student_major)                   # Add the supplied Major to this student.
+
+    def remove_section(self, section):
+        """
+        Remove a major from the list of majors that a student presently has declared.
+        Essentially, we are UNdeclaring the major.  A bit contrived, but this is for
+        demonstration purposes.
+        :param major:
+        :return:
+        """
+        for next_section in self.sections:
+            # This item in the list is the major we are looking for for this student.
+            if next_section.section == section:
+                self.sections.remove(next_section)
                 return
 
     def __str__(self):

@@ -17,10 +17,10 @@ class Major(Base):
     objectives for their education.  Several Departments have multiple majors.
     For instance the CECS department has both a Computer Engineering as well as
     a Computer Science major."""
-    __tablename__ = "majors"
-    department: Mapped[Department] = relationship(back_populates="majors")
+    __tablename__ = "major"
+    department: Mapped[Department] = relationship(back_populates="major")
     departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation',
-                                                        ForeignKey("departments.abbreviation"),
+                                                        ForeignKey("department.abbreviation"),
                                                         primary_key=False)
     # The major name is unique across the entire college.  The Department is
     # NOT a namespace for the majors.  --> The relationship from Department to Major is

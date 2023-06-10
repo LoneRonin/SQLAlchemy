@@ -24,7 +24,7 @@ class Course(Base):
     departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation',
  #                                                       ForeignKey("departments.abbreviation"),
                                                         primary_key=True)
-    department: Mapped["Department"] = relationship(back_populates="courses")
+    department: Mapped["Department"] = relationship(back_populates="course")
     courseNumber: Mapped[int] = mapped_column('course_number', Integer,
                                               nullable=False, primary_key=True)
     name: Mapped[str] = mapped_column('name', String(50), nullable=False)

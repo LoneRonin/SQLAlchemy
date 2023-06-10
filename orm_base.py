@@ -11,5 +11,5 @@ from sqlalchemy.schema import MetaData
 # boolean expression takes the right-hand argument as its output and passes that in to the
 # MetaData constructor.
 
-Base = declarative_base(metadata=MetaData(schema=(input('Schema name [introduction]-->') or "introduction")))
+Base = declarative_base(metadata=MetaData(schema=(input('Schema name [introduction]-->') or "29560633")))
 metadata = Base.metadata

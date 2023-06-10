@@ -26,7 +26,7 @@ class Section(Base):
     startTime: Mapped[time] = mapped_column('start_time', Time, nullable=False)
     instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 
-    student: Mapped[List["Enrollment"]] = relationship(back_populates="student",
+    student: Mapped[List["Enrollment"]] = relationship(back_populates="section",
                                                         cascade="all, save-update, delete-orphan")
     sectionId: Mapped[int] = mapped_column('section_id', Integer, Identity(start=1, cycle=True), primary_key=True)
 
@@ -62,7 +62,7 @@ class Section(Base):
         """
         # Make sure that this student does not already have this major.
         for next_student in self.student:
-            if next_student.s == s:
+            if next_student.student == s:
                 return  # This student already has this major
         # Create the new instance of StudentMajor to connect this Student to the supplied Major.
         section_student = Enrollment(self, s)
@@ -80,7 +80,7 @@ class Section(Base):
         """
         for next_student in self.student:
             # This item in the list is the major we are looking for for this student.
-            if next_student.s == s:
+            if next_student.student == s:
                 self.student.remove(next_student)
                 return
 

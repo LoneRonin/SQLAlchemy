@@ -62,7 +62,7 @@ class Major(Base):
         """
         # Make sure that this Major does not already have this Student.
         for next_student in self.student:
-            if next_student.s == s:
+            if next_student.student == s:
                 return              # This student is already in this major.
         # create the necessary Association Class instance that connects This major to
         # the supplied student.
@@ -76,7 +76,7 @@ class Major(Base):
         :return:            None
         """
         for next_student in self.student:
-            if next_student.s == s:
+            if next_student.student == s:
                 # Remove this major from the student's list of majors.
                 self.student.remove(next_student)
                 return

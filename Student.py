@@ -43,7 +43,7 @@ class Student(Base):
         """
         # Make sure that this student does not already have this major.
         for next_major in self.major:
-            if next_major.m == m:
+            if next_major.major == m:
                 return  # This student already has this major
         # Create the new instance of StudentMajor to connect this Student to the supplied Major.
         student_major = StudentMajor(self, m, datetime.now())
@@ -61,7 +61,7 @@ class Student(Base):
         """
         for next_major in self.major:
             # This item in the list is the major we are looking for for this student.
-            if next_major.m == m:
+            if next_major.major == m:
                 self.major.remove(next_major)
                 return
 
@@ -73,7 +73,7 @@ class Student(Base):
         """
         # Make sure that this student does not already have this major.
         for next_section in self.section:
-            if next_section.s == s:
+            if next_section.section == s:
                 return  # This student already has this major
         # Create the new instance of StudentMajor to connect this Student to the supplied Major.
         student_section = Enrollment(self, s)
@@ -91,7 +91,7 @@ class Student(Base):
         """
         for next_section in self.section:
             # This item in the list is the major we are looking for for this student.
-            if next_section.s == s:
+            if next_section.section == s:
                 self.section.remove(next_section)
                 return
 

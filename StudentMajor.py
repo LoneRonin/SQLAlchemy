@@ -25,7 +25,7 @@ class StudentMajor(Base):
     def __init__(self, student, major, declaration_date: datetime):
         self.student = student
         self.major = major
-        self.student_id = student.studentID
+        self.student_id = student.studentId
         self.majorName = major.name
         self.declarationDate = declaration_date
 

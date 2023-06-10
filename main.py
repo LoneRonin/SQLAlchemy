@@ -147,7 +147,7 @@ def delete_student(session: Session):
     """
     session.delete(student)
 
-def list_students(session: Session):
+def list_student(session: Session):
     """
     List all of the students, sorted by the last name first, then the first name.
     :param session:
@@ -284,7 +284,7 @@ def delete_department(session: Session):
         session.delete(OldDepartment)
 
 
-def list_departments(session: Session):
+def list_department(session: Session):
     """
     List all of the students, sorted by the last name first, then the first name.
     :param session:
@@ -401,7 +401,7 @@ def select_course(sess: Session) -> Course:
                                        Course.courseNumber == course_number).first()
     return course
 
-def list_courses(sess: Session):
+def list_course(sess: Session):
     """
     List all courses currently in the database.
     :param sess:    The connection to the database.
@@ -453,7 +453,7 @@ def move_course_to_new_department(sess: Session):
             else:
                 course.set_department(new_department)
 
-def list_department_courses(sess: Session):
+def list_department_course(sess: Session):
     department = select_department(sess)
     dept_courses: [Course] = department.get_courses()
     print("Course for department: " + str(department))
@@ -538,7 +538,7 @@ def add_section(sess: Session):
     sess.add(new_section)
     print("Section added successfully.")
 
-def list_sections_courses(sess):
+def list_section_course(sess):
     sections: [Section] = list(sess.query(Section).order_by(Section.section_number))
     for section in sections:
         print(section)
@@ -593,7 +593,7 @@ def add_major(session: Session):
 def add_student_major(sess):
     student: Student = select_student(sess)
     major: Major = select_major(sess)
-    student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentID,
+    student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentId,
                                                                StudentMajor.majorName == major.name).count()
     unique_student_major: bool = student_major_count == 0
     while not unique_student_major:
@@ -617,7 +617,7 @@ def add_student_major(sess):
 def add_major_student(sess):
     major: Major = select_major(sess)
     student: Student = select_student(sess)
-    student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentID,
+    student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentId,
                                                                StudentMajor.majorName == major.name).count()
     unique_student_major: bool = student_major_count == 0
     while not unique_student_major:
@@ -691,9 +691,9 @@ def list_student_major(sess: Session):
     :return:        None
     """
     student: Student = select_student(sess)
-    recs = sess.query(Student).join(StudentMajor, Student.studentID == StudentMajor.studentId).join(
+    recs = sess.query(Student).join(StudentMajor, Student.studentId == StudentMajor.studentId).join(
         Major, StudentMajor.majorName == Major.name).filter(
-        Student.studentID == student.studentID).add_columns(
+        Student.studentId == student.studentId).add_columns(
         Student.lastName, Student.firstName, Major.description, Major.name).all()
     for stu in recs:
         print(f"Student name: {stu.lastName}, {stu.firstName}, Major: {stu.name}, Description: {stu.description}")
@@ -705,7 +705,7 @@ def list_major_student(sess: Session):
     """
     major: Major = select_major(sess)
     recs = sess.query(Major).join(StudentMajor, StudentMajor.majorName == Major.name).join(
-        Student, StudentMajor.studentId == Student.studentID).filter(
+        Student, StudentMajor.studentId == Student.studentId).filter(
         Major.name == major.name).add_columns(
         Student.lastName, Student.firstName, Major.description, Major.name).all()
     for stu in recs:

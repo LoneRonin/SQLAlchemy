@@ -25,6 +25,7 @@ menu_main = Menu('main', 'Please select one of the following options:', [
 add_menu = Menu('add', 'Please indicate what you want to add:', [
     Option("Department", "add_department(sess)"),
     Option("Course", "add_course(sess)"),
+    Option("Section", "add_section(sess)"),
     Option("Major", "add_major(sess)"),
     Option("Student", "add_student(sess)"),
     Option("Student to Major", "add_student_major(sess)"),
@@ -35,6 +36,7 @@ add_menu = Menu('add', 'Please indicate what you want to add:', [
 delete_menu = Menu('delete', 'Please indicate what you want to delete from:', [
     Option("Department", "delete_department(sess)"),
     Option("Course", "delete_course(sess)"),
+    Option("Section", "delete_section(sess)"),
     Option("Major", "delete_major(sess)"),
     Option("Student", "delete_student(sess)"),
     Option("Student to Major", "delete_student_major(sess)"),
@@ -45,6 +47,7 @@ delete_menu = Menu('delete', 'Please indicate what you want to delete from:', [
 list_menu = Menu('list', 'Please indicate what you want to list:', [
     Option("Department", "list_department(sess)"),
     Option("Course", "list_course(sess)"),
+    Option("Section", "list_sections_courses(sess)"),
     Option("Major", "list_major(sess)"),
     Option("Student", "list_student(sess)"),
     Option("Student to Major", "list_student_major(sess)"),

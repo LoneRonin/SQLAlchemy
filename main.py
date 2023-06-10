@@ -131,27 +131,6 @@ def select_student_email(sess: Session) -> Student:
     return_student: Student = sess.query(Student).filter(Student.eMail == email).first()
     return return_student
 
-
-def find_student(sess: Session) -> Student:
-    """
-    Prompt the user for attribute values to select a single student.
-    :param sess:    The connection to the database.
-    :return:        The instance of Student that the user selected.
-                    Note: there is no provision for the user to simply "give up".
-    """
-    find_student_command = student_select.menu_prompt()
-    match find_student_command:
-        case "department name":
-            old_student = select_student_id(sess)
-        case "first/last name":
-            old_student = select_student_first_and_last_name(sess)
-        case "email":
-            old_student = select_student_email(sess)
-        case _:
-            old_student = None
-    return old_student
-
-
 def delete_student(session: Session):
     """
     Prompt the user for a student to delete and delete them.

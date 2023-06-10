@@ -559,8 +559,8 @@ def add_section(sess: Session):
     sess.add(new_section)
     print("Section added successfully.")
 
-def list_course_sections(sess: Session):
-    sections: [Section] = list(sess.query(Section).order_by(Section.sectionNumber))
+def list_sections_courses(sess):
+    sections: [Section] = list(sess.query(Section).order_by(Section.section_number))
     for section in sections:
         print(section)
 

@@ -762,7 +762,7 @@ def unenroll_student_section(sess):
     :param sess:    The current database session.
     :return:        None
     """
-    print("Prompting you for the student and the major that they no longer have.")
+    print("Prompting you for the student and the section that they no longer have.")
     student: Student = select_student(sess)
     section: Section = select_section(sess)
     student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
@@ -782,7 +782,7 @@ def unenroll_section_student(sess):
     :param sess:    The current database session.
     :return:        None
     """
-    print("Prompting you for the major and the student who no longer has that major.")
+    print("Prompting you for the section and the student who no longer has that section.")
     section: Section = select_section(sess)
     student: Student = select_student(sess)
     student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,

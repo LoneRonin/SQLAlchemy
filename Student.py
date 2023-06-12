@@ -95,8 +95,12 @@ class Student(Base):
                 self.section.remove(next_section)
                 return
 
-    def remove_enrollment(self):
-        self.remove_section
+    def remove_enrollment(self, s):
+        for next_section in self.section:
+            # This item in the list is the major we are looking for for this student.
+            if next_section.section == s:
+                self.section.remove(next_section)
+                return
 
     def __str__(self):
         return f"Student id: {self.studentId} name: {self.lastName}, {self.firstName}\nEmail Address: {self.eMail}"

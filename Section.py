@@ -84,8 +84,12 @@ class Section(Base):
                 self.student.remove(next_student)
                 return
 
-    def remove_enrollment(self):
-        self.remove_student
+    def remove_enrollment(self, s):
+        for next_student in self.student:
+            # This item in the list is the major we are looking for this student.
+            if next_student.student == s:
+                self.student.remove(next_student)
+                return
 
     def __str__(self):
         return f"Section {self.courseNumber} {self.sectionNumber} " \

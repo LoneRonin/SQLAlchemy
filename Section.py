@@ -65,7 +65,7 @@ class Section(Base):
             if next_student.student == s:
                 return  # This student already has this major
         # Create the new instance of StudentMajor to connect this Student to the supplied Major.
-        section_student = Enrollment(self, s)
+        section_student = Enrollment(s, self)
 
     #        major.students.append(student_major)                # Add this Student to the supplied Major.
     #        self.majors.append(student_major)                   # Add the supplied Major to this student.
@@ -79,7 +79,7 @@ class Section(Base):
         :return:
         """
         for next_student in self.student:
-            # This item in the list is the major we are looking for for this student.
+            # This item in the list is the major we are looking for this student.
             if next_student.student == s:
                 self.student.remove(next_student)
                 return

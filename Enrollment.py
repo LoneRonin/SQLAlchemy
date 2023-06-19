@@ -20,6 +20,7 @@ class Enrollment(Base):
     __table_args__ = (UniqueConstraint("section_id", name="enrollment_uk_01"), ForeignKeyConstraint(["section_id"],
                                                             ["section.section_id"], name="enrollment_section_fk_01"),)
     __mapper_args__ = {"polymorphic_identity": "enrollment", "polymorphic_on": "type"}
+
     def __init__(self, student, section):
         self.student = student
         self.section = section

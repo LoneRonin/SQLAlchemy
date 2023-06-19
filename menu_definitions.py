@@ -34,6 +34,7 @@ add_menu = Menu('add', 'Please indicate what you want to add:', [
     Option("Student to Section", "add_student_section(sess)"),
     Option("Section to Student", "add_section_student(sess)"),
     Option("Student to PassFail", "add_student_PassFail(sess)"),
+    Option("Student to LetterGrade", "add_student_LetterGrade(sess)"),
     Option("Exit", "pass")
 ])
 

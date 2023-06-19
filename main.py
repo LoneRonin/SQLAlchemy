@@ -16,6 +16,7 @@ from Section import Section
 from StudentMajor import StudentMajor
 from Enrollment import Enrollment
 from PassFail import PassFail
+from LetterGrade import LetterGrade
 from Option import Option
 from Menu import Menu
 import IPython
@@ -869,6 +870,27 @@ def add_student_PassFail(sess):
             print("That section already has that student enrolled in it.  Try again.")
     pass_fail = PassFail(section, student, datetime.now())
     sess.add(pass_fail)
+    sess.flush()
+
+def add_student_LetterGrade(sess):
+    """
+    Add a student to a section as a letter grade.
+    :param sess: The current database connection.
+    :return:    None
+    """
+    student: Student
+    section: Section
+    unique_student_section: bool = False
+    while not unique_student_section:
+        student = select_student(sess)
+        section = select_section(sess)
+        pk_count: int = count_student_section(sess, student, section)
+        unique_student_section = pk_count == 0
+        if not unique_student_section:
+            print("That section already has that student enrolled in it.  Try again.")
+    grade = "A"
+    letter_grade = LetterGrade(section, student, grade)
+    sess.add(letter_grade)
     sess.flush()
 
 def boilerplate(sess):

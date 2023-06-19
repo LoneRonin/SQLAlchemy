@@ -20,13 +20,13 @@ class Section(Base):
     sectionNumber: Mapped[int] = mapped_column('section_number', Integer, nullable=False, primary_key=True)
     semester: Mapped[str] = mapped_column('semester', String(10),
                                           CheckConstraint("semester IN('Fall', 'Spring', 'Winter',\
- 'Summer I', 'Summer II', 'Summer III')", name="sections_semester_constraint"), primary_key=True)
+ 'Summer I', 'Summer II', 'Summer III')", name="section_semester_constraint"), primary_key=True)
     sectionYear: Mapped[int] = mapped_column('section_year', Integer, nullable=False, primary_key=True)
     building: Mapped[str] = mapped_column('building', String(6), nullable=False)
     room: Mapped[int] = mapped_column('room', Integer, nullable=False)
     schedule: Mapped[str] = mapped_column('schedule', String(6),
                                           CheckConstraint("schedule IN('MW', 'MWF', 'TuTh', 'F', 'S')",
-                                                          name="sections_schedule_constraint"))
+                                                          name="section_schedule_constraint"))
     startTime: Mapped[time] = mapped_column('start_time', Time, nullable=False)
     instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 

@@ -1,6 +1,7 @@
 from sqlalchemy import Date, ForeignKey
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 from Enrollment import Enrollment
+from typing import List
 
 class PassFail(Enrollment):
     __tablename__ = "pass_fail"

@@ -888,7 +888,7 @@ def add_student_LetterGrade(sess):
         unique_student_section = pk_count == 0
         if not unique_student_section:
             print("That section already has that student enrolled in it.  Try again.")
-    grade = "A"
+    grade = input("Enter grade--> ")
     letter_grade = LetterGrade(section, student, grade)
     sess.add(letter_grade)
     sess.flush()

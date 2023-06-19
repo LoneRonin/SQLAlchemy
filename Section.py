@@ -1,5 +1,5 @@
 from orm_base import Base
-from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
+from sqlalchemy import UniqueConstraint, ForeignKeyConstraint, CheckConstraint
 from sqlalchemy import String, Integer, Identity
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from Course import Course
@@ -18,11 +18,15 @@ class Section(Base):
 
     courseNumber: Mapped[int] = mapped_column('course_number', Integer, primary_key=True)
     sectionNumber: Mapped[int] = mapped_column('section_number', Integer, nullable=False, primary_key=True)
-    semester: Mapped[str] = mapped_column('semester', String(10), nullable=False, primary_key=True)
+    semester: Mapped[str] = mapped_column('semester', String(10),
+                                          CheckConstraint("semester IN('Fall', 'Spring', 'Winter',\
+ 'Summer I', 'Summer II', 'Summer III')", name="sections_semester_constraint"), primary_key=True)
     sectionYear: Mapped[int] = mapped_column('section_year', Integer, nullable=False, primary_key=True)
     building: Mapped[str] = mapped_column('building', String(6), nullable=False)
     room: Mapped[int] = mapped_column('room', Integer, nullable=False)
-    schedule: Mapped[str] = mapped_column('schedule', String(6), nullable=False)
+    schedule: Mapped[str] = mapped_column('schedule', String(6),
+                                          CheckConstraint("schedule IN('MW', 'MWF', 'TuTh', 'F', 'S')",
+                                                          name="sections_schedule_constraint"))
     startTime: Mapped[time] = mapped_column('start_time', Time, nullable=False)
     instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
 
@@ -33,9 +37,10 @@ class Section(Base):
     __table_args__ = (UniqueConstraint("section_year", "semester", "schedule", "start_time", "building", "room",
                         name="section_uk_01"),
         UniqueConstraint("section_year", "semester", "schedule", "start_time", "instructor", name="section_uk_02"),
-                      UniqueConstraint("section_id", name="sections_uk_03"),
+                      UniqueConstraint("section_id", name="section_uk_03"),
         ForeignKeyConstraint([departmentAbbreviation, courseNumber],
-                                           [Course.departmentAbbreviation, Course.courseNumber]))
+                                           [Course.departmentAbbreviation, Course.courseNumber],
+                             name="section_course_fk_01"))
 
     def __init__(self, course: Course, sectionNumber: int, semester: str, sectionYear: int, building: str, room: int,
                  schedule: str, startTime, instructor: str):

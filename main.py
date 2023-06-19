@@ -3,7 +3,7 @@ from pprint import pprint
 
 from sqlalchemy import select
 
-from menu_definitions import menu_main, add_menu, delete_menu, list_menu, debug_select
+from menu_definitions import menu_main, add_menu, delete_menu, list_menu, semester_menu, schedule_menu, debug_select
 from db_connection import engine, Session
 from orm_base import metadata
 # Note that until you import your SQLAlchemy declarative classes, such as Student, Python
@@ -15,10 +15,12 @@ from Student import Student
 from Section import Section
 from StudentMajor import StudentMajor
 from Enrollment import Enrollment
+from PassFail import PassFail
 from Option import Option
 from Menu import Menu
+import IPython
 
-from datetime import time
+from datetime import time, datetime
 
 def add(sess: Session):
     add_action: str = ''
@@ -347,9 +349,9 @@ def select_department(sess: Session) -> Department:
         found = abbreviation_count == 1
         if not found:
             print("No department with that abbreviation.  Try again.")
-    return_student: Department = sess.query(Department). \
+    return_department: Department = sess.query(Department). \
         filter(Department.abbreviation == abbreviation).first()
-    return return_student
+    return return_department
 
 def add_course(session: Session):
     """
@@ -498,7 +500,7 @@ def add_section(sess: Session):
     year: int = -1
     semester: str = ''
     schedule: str = ''
-    startTime: time = time(0, 0, 0)
+    startTime: time
     building: str = ''
     room: int = -1
     instructor: str = ''
@@ -510,7 +512,9 @@ def add_section(sess: Session):
         year = int(input("Section Year--> "))
         semester = input("Semester--> ")
         schedule = input("Schedule--> ")
-        startTime = time(int(input("Start Time--> ")))
+        start_hour = int(input("Start hour--> "))
+        start_minute = int(input("Start minute--> "))
+        startTime = time(start_hour, start_minute)
         building = input("Building--> ")
         room = int(input("Room--> "))
         instructor = input("Instructor--> ")
@@ -529,7 +533,7 @@ def add_section(sess: Session):
             unique_year = unique_semester = unique_schedule = unique_startTime = unique_building = \
                 unique_room = key1_count == 0
             if not unique_year:
-                print("We already have a section similar.  Try again.")
+                print("That room in that building is already booked at that time.  Try again.")
         if unique_number:
             key2_count = sess.query(Section).filter(Section.sectionYear == year, Section.semester == semester,
                                                     Section.schedule == schedule, Section.startTime == startTime,
@@ -537,7 +541,7 @@ def add_section(sess: Session):
             unique_year = unique_semester = unique_schedule = unique_startTime = unique_building = \
                 unique_room = key2_count == 0
             if not unique_year:
-                print("We already have a section similar.  Try again.")
+                print("That instructor is already booked at that time and schedule.  Try again.")
 
     new_section = Section(course, section_number, semester, year, building, room, schedule, startTime,
                           instructor)
@@ -607,17 +611,18 @@ def add_major(session: Session):
     description: str = input('Please give this major a description -->')
     major: Major = Major(department, name, description)
     session.add(major)
+    session.flush()
 
 def add_student_major(sess):
-    student: Student = select_student(sess)
-    major: Major = select_major(sess)
-    student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentId,
-                                                               StudentMajor.majorName == major.name).count()
-    unique_student_major: bool = student_major_count == 0
+    unique_student_major: bool = False
     while not unique_student_major:
-        print("That student already has that major.  Try again.")
         student = select_student(sess)
         major = select_major(sess)
+        student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentID,
+                                                                   StudentMajor.majorName == major.name).count()
+        unique_student_major = student_major_count == 0
+        if not unique_student_major:
+            print("That student already has that major.  Try again.")
     student.add_major(major)
     """The student object instance is mapped to a specific row in the Student table.  But adding
     the new major to its list of majors does not add the new StudentMajor instance to this session.
@@ -730,15 +735,14 @@ def list_major_student(sess: Session):
         print(f"Student name: {stu.lastName}, {stu.firstName}, Major: {stu.name}, Description: {stu.description}")
 
 def add_student_section(sess):
-    student: Student = select_student(sess)
-    section: Section = select_section(sess)
-    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
-                                                               Enrollment.sectionId == section.sectionId).count()
-    unique_student_section: bool = student_section_count == 0
+    unique_student_section: bool = False
     while not unique_student_section:
-        print("That student already has that section.  Try again.")
         student = select_student(sess)
         section = select_section(sess)
+        pk_count: int = count_student_section(sess, student, section)
+        unique_student_section = pk_count == 0
+        if not unique_student_section:
+            print("That section already has that student enrolled in it.  Try again.")
     student.add_section(section)
     sess.add(student)                           # add the StudentMajor to the session
     sess.flush()
@@ -825,6 +829,48 @@ def list_section_student(sess: Session):
         print(f"Student name: {stu.lastName}, {stu.firstName}, Course Number: {stu.courseNumber},"
               f" Section: {stu.sectionNumber}")
 
+def count_student_section(sess, student: Student, section: Section):
+    """Count the number of Enrollment instances for a given student & section.
+    :param  sess        The current session.
+    :param  student     The enrolling student.
+    :param  section     The section that we want to see whether that student is enrolled."""
+    pk_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
+        Enrollment.sectionId == section.sectionId).count()
+    return pk_count
+
+def list_enrollment(sess: Session):
+    """
+    List out all enrollment records sorted by department, course,
+    section number.
+    :param sess:    The current connection.
+    :return:        None
+    """
+    recs = sess.query(Enrollment).order_by(Enrollment.departmentAbbreviation,
+                                           Enrollment.courseNumber,
+                                           Enrollment.sectionYear).all()
+    for rec in recs:
+        print(rec)
+
+def add_student_PassFail(sess):
+    """
+    Add a student to a section as a pass/fail.
+    :param sess: The current database connection.
+    :return:    None
+    """
+    student: Student
+    section: Section
+    unique_student_section: bool = False
+    while not unique_student_section:
+        student = select_student(sess)
+        section = select_section(sess)
+        pk_count: int = count_student_section(sess, student, section)
+        unique_student_section = pk_count == 0
+        if not unique_student_section:
+            print("That section already has that student enrolled in it.  Try again.")
+    pass_fail = PassFail(section, student, datetime.now())
+    sess.add(pass_fail)
+    sess.flush()
+
 def boilerplate(sess):
     """
     Add boilerplate data initially to jump start the testing.  Remember that there is no
@@ -842,12 +888,20 @@ def boilerplate(sess):
     student1.add_major(major1)
     student2.add_major(major1)
     student2.add_major(major2)
+    course1: Course = Course(department, 323, "Database Design Fundamentals",
+                             "Basics of database design", 3)
+    course2: Course = Course(department, 174, "Intro to Programming",
+                             "First real programming course", 3)
+    section1: Section = Section(course1, 1, 'Fall', 2023, 'ECS', 416, 'MW', time(8, 0, 0), 'Brown')
     sess.add(department)
+    sess.add(course1)
+    sess.add(course2)
     sess.add(major1)
     sess.add(major2)
     sess.add(student1)
     sess.add(student2)
     sess.add(student3)
+    sess.add(section1)
     sess.flush()
 
 def session_rollback(sess):

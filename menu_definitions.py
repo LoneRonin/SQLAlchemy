@@ -19,6 +19,7 @@ menu_main = Menu('main', 'Please select one of the following options:', [
     Option("Boilerplate Data", "boilerplate(sess)"),
     Option("Commit", "sess.commit()"),
     Option("Rollback", "session_rollback(sess)"),
+    Option("Break out into shell", "IPython.embed()"),
     Option("Exit this application", "pass")
 ])
 
@@ -32,6 +33,7 @@ add_menu = Menu('add', 'Please indicate what you want to add:', [
     Option("Major to Student", "add_major_student(sess)"),
     Option("Student to Section", "add_student_section(sess)"),
     Option("Section to Student", "add_section_student(sess)"),
+    Option("Student to PassFail", "add_student_PassFail(sess)"),
     Option("Exit", "pass")
 ])
 
@@ -58,7 +60,26 @@ list_menu = Menu('list', 'Please indicate what you want to list:', [
     Option("Major to Student", "list_major_student(sess)"),
     Option("Student to Section", "list_student_section(sess)"),
     Option("Section to Student", "list_section_student(sess)"),
+    Option("Enrollment", "list_enrollment"),
     Option("Exit", "pass")
+])
+
+schedule_menu = Menu('schedule', 'Please indicate the section schedule:', [
+    Option("Monday/Wednesday", "MW"),
+    Option("Monday/Wednesday/Friday", "MWF"),
+    Option("Tuesday/Thursday", "TuTh"),
+    Option("Friday only", "F"),
+    Option("Saturday only", "S"),
+    Option("test bogus", "LOL")
+])
+
+semester_menu = Menu('semester', 'Please indicate the section semester:', [
+    Option("Fall", "Fall"),
+    Option("Spring", "Spring"),
+    Option("Winter", "Winter"),
+    Option("Summer I", "Summer I"),
+    Option("Summer II", "Summer II"),
+    Option("Summer III", "Summer III")
 ])
 
 # A menu to prompt for the amount of logging information to go to the console.

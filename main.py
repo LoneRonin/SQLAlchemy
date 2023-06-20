@@ -550,28 +550,46 @@ def add_section(sess: Session):
     print("Section added successfully.")
 
 def list_section_course(sess):
-    sections: [Section] = list(sess.query(Section).order_by(Section.sectionNumber))
+    """
+    List all of the sections in the database.
+    :param sess:    The current connection to the database.
+    :return:
+    """
+    sections: [Section] = list(sess.query(Section).order_by(Section.departmentAbbreviation,
+                                                            Section.courseNumber,
+                                                            Section.sectionNumber,
+                                                            Section.sectionYear,
+                                                            Section.semester))
     for section in sections:
         print(section)
 
-def select_section(sess: Session) -> Section:
+
+def select_section(session) -> Section:
+    """
+        Select a section by the primary key.
+        :param session: The connection to the database.
+        :return:        The selected section.
+        """
     found: bool = False
-    department_abbreviation: str = ''
-    course_number: int = -1
-    section_number: int = -1
     while not found:
-        department_abbreviation = input("Department abbreviation--> ")
-        course_number = int(input("Course Number--> "))
-        section_number = int(input("Section Number--> "))
-        name_count: int = sess.query(Section).filter(Section.departmentAbbreviation == department_abbreviation,
-                                                    Section.courseNumber == course_number,
-                                                     Section.sectionNumber == section_number).count()
-        found = name_count == 1
+        print('Please provide the course that this section belongs to:')
+        course: Course = select_course(session)
+        sectionNumber = int(input('What is the section number -->'))
+        semester = semester_menu.menu_prompt()
+        sectionYear = int(input('Which year is this section offered in? --> '))
+        pk_count: int = session.query(Section).filter(Section.departmentAbbreviation == course.departmentAbbreviation,
+                                                      Section.courseNumber == course.courseNumber,
+                                                      Section.sectionNumber == sectionNumber,
+                                                      Section.sectionYear == sectionYear,
+                                                      Section.semester == semester).count()
+        found = pk_count == 1
         if not found:
-            print("No section by that number in that course.  Try again.")
-    section = sess.query(Section).filter(Section.departmentAbbreviation == department_abbreviation,
-                                       Section.courseNumber == course_number,
-                                         Section.sectionNumber == section_number).first()
+            print("No section found by that course, section#, semester & year.  Try again.")
+    section: Section = session.query(Section).filter(Section.departmentAbbreviation == course.departmentAbbreviation,
+                                                     Section.courseNumber == course.courseNumber,
+                                                     Section.sectionNumber == sectionNumber,
+                                                     Section.sectionYear == sectionYear,
+                                                     Section.semester == semester).first()
     return section
 
 def delete_section(sess: Session):
@@ -736,6 +754,8 @@ def list_major_student(sess: Session):
         print(f"Student name: {stu.lastName}, {stu.firstName}, Major: {stu.name}, Description: {stu.description}")
 
 def add_student_section(sess):
+    student: Student
+    section: Section
     unique_student_section: bool = False
     while not unique_student_section:
         student = select_student(sess)
@@ -745,21 +765,28 @@ def add_student_section(sess):
         if not unique_student_section:
             print("That section already has that student enrolled in it.  Try again.")
     student.add_section(section)
-    sess.add(student)                           # add the StudentMajor to the session
+    sess.add(student)
     sess.flush()
 
 def add_section_student(sess):
-    section: Section = select_section(sess)
-    student: Student = select_student(sess)
-    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
-                                                               Enrollment.sectionId == section.sectionId).count()
-    unique_student_section: bool = student_section_count == 0
-    while not unique_student_section:
-        print("That section already has that student.  Try again.")
-        section = select_section(sess)
+    student: Student
+    section: Section
+    unique_section_student: bool = False
+    while not unique_section_student:
         student = select_student(sess)
+        section = select_section(sess)
+        pk_count: int = sess.query(Enrollment).filter(
+            Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+            Enrollment.courseNumber == section.courseNumber,
+            Enrollment.sectionNumber == section.sectionNumber,
+            Enrollment.sectionYear == section.sectionYear,
+            Enrollment.semester == section.semester,
+            Enrollment.studentID == student.studentID).count()
+        unique_section_student = pk_count == 0
+        if not unique_section_student:
+            print("That student is already enrolled in that class.  Try again.")
     section.add_student(student)
-    sess.add(section)                           # add the StudentMajor to the session
+    sess.add(section)
     sess.flush()
 
 def unenroll_student_section(sess):
@@ -803,40 +830,72 @@ def unenroll_section_student(sess):
     section.remove_enrollment(student)
 
 def list_student_section(sess: Session):
-    """Prompt the user for the student, and then list the section that the student has declared.
-    :param sess:    The connection to the database
+    """Prompt the user for the student, then list the sections they are enrolled in.
+    :param sess:    The connection to the database.
     :return:        None
     """
     student: Student = select_student(sess)
-    recs = sess.query(Student).join(Enrollment, Student.studentId == Enrollment.studentId).join(
-        Section, Enrollment.sectionId == Section.sectionId).filter(
-        Student.studentId == student.studentId).add_columns(
-        Student.lastName, Student.firstName, Section.courseNumber, Section.sectionNumber).all()
+    # I went old school with this because I was unable to find a way to get the join to work
+    # when I had multiple columns in the ON clause.  Essentially this join does a Cartesian
+    # product between Student, Enrollment, & Section & then uses the filter to correlate
+    # between them based on migrated foreign keys.
+    recs = sess.query(Student, Enrollment, Section).filter(
+        Student.studentID == Enrollment.studentID,
+        Enrollment.departmentAbbreviation == Section.departmentAbbreviation,
+        Enrollment.courseNumber == Section.courseNumber,
+        Enrollment.sectionNumber == Section.sectionNumber,
+        Enrollment.sectionYear == Section.sectionYear,
+        Enrollment.semester == Section.semester,
+        Enrollment.studentID == student.studentID).add_columns(
+        Student.lastName, Student.firstName, Section.departmentAbbreviation,
+        Section.courseNumber, Section.sectionNumber, Section.sectionYear,
+        Section.semester).all()
     for stu in recs:
-        print(f"Student name: {stu.lastName}, {stu.firstName}, Course Number: {stu.courseNumber},"
-              f" Section: {stu.sectionNumber}")
+        print(f"Student name: {stu.lastName}, {stu.firstName}, " +
+              f"Course#: {stu.courseNumber}, Section: {stu.sectionNumber}")
 
 def list_section_student(sess: Session):
-    """Prompt the user for the major, then list the students who have that major declared.
+    """Prompt the user for the section, then list the students that are enrolled.
     :param sess:    The connection to the database.
     :return:        None
     """
     section: Section = select_section(sess)
-    recs = sess.query(Section).join(Enrollment, Enrollment.sectionId == Section.sectionId).join(
-        Student, Enrollment.studentId == Student.studentId).filter(
-        Section.sectionId == section.sectionId).add_columns(
-        Student.lastName, Student.firstName, Section.courseNumber, Section.sectionNumber).all()
+    # I went old school with this because I was unable to find a way to get the join to work
+    # when I had multiple columns in the ON clause.  Essentially this join does a Cartesian
+    # product between Student, Enrollment, & Section & then uses the filter to correlate
+    # between them based on migrated foreign keys.
+    recs = sess.query(Section, Enrollment, Student).filter(
+        Student.studentID == Enrollment.studentID,
+        Enrollment.departmentAbbreviation == Section.departmentAbbreviation,
+        Enrollment.courseNumber == Section.courseNumber,
+        Enrollment.sectionNumber == Section.sectionNumber,
+        Enrollment.sectionYear == Section.sectionYear,
+        Enrollment.semester == Section.semester,
+        Section.departmentAbbreviation == section.departmentAbbreviation,
+        Section.courseNumber == section.courseNumber,
+        Section.sectionNumber == section.sectionNumber,
+        Section.sectionYear == section.sectionYear,
+        Section.semester == section.semester).add_columns(
+        Student.lastName, Student.firstName, Section.departmentAbbreviation,
+        Section.courseNumber, Section.sectionNumber, Section.sectionYear,
+        Section.semester).all()
     for stu in recs:
-        print(f"Student name: {stu.lastName}, {stu.firstName}, Course Number: {stu.courseNumber},"
-              f" Section: {stu.sectionNumber}")
+        print(f"Student name: {stu.lastName}, {stu.firstName}, " +
+              f"Course#: {stu.courseNumber}, Section: {stu.sectionNumber} " +
+              f"Year: {stu.sectionYear} Semester: {stu.semester}")
 
 def count_student_section(sess, student: Student, section: Section):
     """Count the number of Enrollment instances for a given student & section.
     :param  sess        The current session.
     :param  student     The enrolling student.
     :param  section     The section that we want to see whether that student is enrolled."""
-    pk_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
-        Enrollment.sectionId == section.sectionId).count()
+    pk_count: int = sess.query(Enrollment).filter(
+        Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+        Enrollment.courseNumber == section.courseNumber,
+        Enrollment.sectionNumber == section.sectionNumber,
+        Enrollment.sectionYear == section.sectionYear,
+        Enrollment.semester == section.semester,
+        Enrollment.studentID == student.studentId).count()
     return pk_count
 
 def list_enrollment(sess: Session):

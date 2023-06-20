@@ -637,7 +637,7 @@ def add_student_major(sess):
     while not unique_student_major:
         student = select_student(sess)
         major = select_major(sess)
-        student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentID,
+        student_major_count: int = sess.query(StudentMajor).filter(StudentMajor.studentId == student.studentId,
                                                                    StudentMajor.majorName == major.name).count()
         unique_student_major = student_major_count == 0
         if not unique_student_major:
@@ -781,7 +781,7 @@ def add_section_student(sess):
             Enrollment.sectionNumber == section.sectionNumber,
             Enrollment.sectionYear == section.sectionYear,
             Enrollment.semester == section.semester,
-            Enrollment.studentID == student.studentID).count()
+            Enrollment.studentId == student.studentId).count()
         unique_section_student = pk_count == 0
         if not unique_section_student:
             print("That student is already enrolled in that class.  Try again.")
@@ -797,15 +797,25 @@ def unenroll_student_section(sess):
     print("Prompting you for the student and the section that they no longer have.")
     student: Student = select_student(sess)
     section: Section = select_section(sess)
-    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
-                                                               Enrollment.sectionId == section.sectionId).count()
+    student_section_count: int = sess.query(Enrollment).filter(
+            Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+            Enrollment.courseNumber == section.courseNumber,
+            Enrollment.sectionNumber == section.sectionNumber,
+            Enrollment.sectionYear == section.sectionYear,
+            Enrollment.semester == section.semester,
+            Enrollment.studentId == student.studentId).count()
     unique_student_section: bool = student_section_count == 1
     while not unique_student_section:
         print("That student does not have that section.  Try again.")
         student = select_student(sess)
         section = select_section(sess)
-        student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
-                                                                   Enrollment.sectionId == section.sectionId).count()
+        student_section_count: int = sess.query(Enrollment).filter(
+            Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+            Enrollment.courseNumber == section.courseNumber,
+            Enrollment.sectionNumber == section.sectionNumber,
+            Enrollment.sectionYear == section.sectionYear,
+            Enrollment.semester == section.semester,
+            Enrollment.studentId == student.studentId).count()
         unique_student_section = student_section_count == 1
     student.remove_enrollment(section)
 
@@ -817,15 +827,25 @@ def unenroll_section_student(sess):
     print("Prompting you for the section and the student who no longer has that section.")
     section: Section = select_section(sess)
     student: Student = select_student(sess)
-    student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
-                                                               Enrollment.sectionId == section.sectionId).count()
+    student_section_count: int = sess.query(Enrollment).filter(
+            Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+            Enrollment.courseNumber == section.courseNumber,
+            Enrollment.sectionNumber == section.sectionNumber,
+            Enrollment.sectionYear == section.sectionYear,
+            Enrollment.semester == section.semester,
+            Enrollment.studentId == student.studentId).count()
     unique_student_section: bool = student_section_count == 1
     while not unique_student_section:
         print("That section does not have that student.  Try again.")
         section = select_section(sess)
         student = select_student(sess)
-        student_section_count: int = sess.query(Enrollment).filter(Enrollment.studentId == student.studentId,
-                                                                   Enrollment.sectionId == section.sectionId).count()
+        student_section_count: int = sess.query(Enrollment).filter(
+            Enrollment.departmentAbbreviation == section.departmentAbbreviation,
+            Enrollment.courseNumber == section.courseNumber,
+            Enrollment.sectionNumber == section.sectionNumber,
+            Enrollment.sectionYear == section.sectionYear,
+            Enrollment.semester == section.semester,
+            Enrollment.studentId == student.studentId).count()
         unique_student_section = student_section_count == 1
     section.remove_enrollment(student)
 
@@ -840,13 +860,13 @@ def list_student_section(sess: Session):
     # product between Student, Enrollment, & Section & then uses the filter to correlate
     # between them based on migrated foreign keys.
     recs = sess.query(Student, Enrollment, Section).filter(
-        Student.studentID == Enrollment.studentID,
+        Student.studentId == Enrollment.studentId,
         Enrollment.departmentAbbreviation == Section.departmentAbbreviation,
         Enrollment.courseNumber == Section.courseNumber,
         Enrollment.sectionNumber == Section.sectionNumber,
         Enrollment.sectionYear == Section.sectionYear,
         Enrollment.semester == Section.semester,
-        Enrollment.studentID == student.studentID).add_columns(
+        Enrollment.studentId == student.studentId).add_columns(
         Student.lastName, Student.firstName, Section.departmentAbbreviation,
         Section.courseNumber, Section.sectionNumber, Section.sectionYear,
         Section.semester).all()
@@ -865,7 +885,7 @@ def list_section_student(sess: Session):
     # product between Student, Enrollment, & Section & then uses the filter to correlate
     # between them based on migrated foreign keys.
     recs = sess.query(Section, Enrollment, Student).filter(
-        Student.studentID == Enrollment.studentID,
+        Student.studentId == Enrollment.studentId,
         Enrollment.departmentAbbreviation == Section.departmentAbbreviation,
         Enrollment.courseNumber == Section.courseNumber,
         Enrollment.sectionNumber == Section.sectionNumber,
@@ -895,7 +915,7 @@ def count_student_section(sess, student: Student, section: Section):
         Enrollment.sectionNumber == section.sectionNumber,
         Enrollment.sectionYear == section.sectionYear,
         Enrollment.semester == section.semester,
-        Enrollment.studentID == student.studentId).count()
+        Enrollment.studentId == student.studentId).count()
     return pk_count
 
 def list_enrollment(sess: Session):

@@ -61,7 +61,7 @@ list_menu = Menu('list', 'Please indicate what you want to list:', [
     Option("Major to Student", "list_major_student(sess)"),
     Option("Student to Section", "list_student_section(sess)"),
     Option("Section to Student", "list_section_student(sess)"),
-    Option("Enrollment", "list_enrollment"),
+    Option("Enrollment", "list_enrollment(sess)"),
     Option("Exit", "pass")
 ])
 

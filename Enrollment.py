@@ -27,7 +27,7 @@ class Enrollment(Base):
                                           nullable=False)
     sectionYear: Mapped[int] = mapped_column("section_year", nullable=False)
     student: Mapped["Student"] = relationship(back_populates="section")
-    studentID: Mapped[int] = mapped_column("student_id", ForeignKey("student.student_id"),
+    studentId: Mapped[int] = mapped_column("student_id", ForeignKey("student.student_id"),
                                            nullable=False)
     type: Mapped[str] = mapped_column("type", String(50), nullable=False)
     # You'll notice that the elements in the two lists for the foreign key constraint are
@@ -54,7 +54,7 @@ class Enrollment(Base):
     __mapper_args__ = {"polymorphic_identity": "enrollment",
                        "polymorphic_on": "type"}
 
-    def __init__(self, student, section):
+    def __init__(self, section, student):
         self.student = student
         self.section = section
         self.student_id = student.studentId
